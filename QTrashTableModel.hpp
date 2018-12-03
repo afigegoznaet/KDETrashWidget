@@ -26,19 +26,17 @@ public:
 	const KFileItem &itemAt(int index);
 	KFileItem rootItem() const;
 	KFileItemList getItemsForDir(const QUrl &dir);
+	KFileItemList currentItems() { return items; }
+	bool isFinished();
 	void cdTo(const QUrl &url);
 
 signals:
-
+	void completed();
 public slots:
 	void addItems(const KFileItemList &items);
+	void reload();
 
 protected:
-	//	bool insertRows(int row, int count,
-	//					const QModelIndex &parent = QModelIndex()) override;
-	//	bool removeRows(int row, int count,
-	//					const QModelIndex &parent = QModelIndex()) override;
-
 private:
 	KFileItemList items;
 	KDirLister *m_trashDirLister;

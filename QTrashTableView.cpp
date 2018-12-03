@@ -1,9 +1,17 @@
-#include "QTrashTableView.hpp"
+﻿#include "QTrashTableView.hpp"
 #include "QTrashTableModel.hpp"
+#include <algorithm>
 #include <QHeaderView>
 #include <KDirLister>
 #include <QGuiApplication>
+#include <QLabel>
+#include <QMenu>
 #include <QDebug>
+#include <KIO/EmptyTrashJob>
+#include <KIO/RestoreJob>
+#include <KIO/DeleteJob>
+#include <KJobWidgets>
+#include <KJobUiDelegate>
 
 QTrashTableView::QTrashTableView(QWidget *parent) : QTableView(parent) {
 
@@ -11,6 +19,28 @@ QTrashTableView::QTrashTableView(QWidget *parent) : QTableView(parent) {
 	// infoLabel = this->parent->getLabel();
 
 	trashModel = new QTrashTableModel(this);
+	menu = new QMenu(this);
+	menu->addAction("Restore selected items", [this] {
+		QList<QUrl> selectedUrls = getSelectedItems();
+		KIO::RestoreJob *job = KIO::restoreFromTrash(selectedUrls);
+		KJobWidgets::setWindow(job, this);
+		job->uiDelegate()->setAutoErrorHandlingEnabled(true);
+		connect(job, &KIO::RestoreJob::finished, this, [this] {
+			qDebug() << "Finsihed restorins";
+			trashModel->reload();
+		});
+	});
+	menu->addAction("Purge selected items", [this] {
+		QList<QUrl> selectedUrls = getSelectedItems();
+		KIO::DeleteJob *job = KIO::del(selectedUrls);
+		KJobWidgets::setWindow(job, this);
+		job->uiDelegate()->setAutoErrorHandlingEnabled(true);
+		connect(job, &KIO::DeleteJob::finished, this, [this] {
+			qDebug() << "Finsihed purging";
+			trashModel->reload();
+		});
+	});
+	menu->addAction("Empty Trash", [] { KIO::emptyTrash(); });
 }
 
 
@@ -37,8 +67,6 @@ void QTrashTableView::init() {
 
 	setSelectionMode(QAbstractItemView::NoSelection);
 
-	connect(this, SIGNAL(doubleClicked(QModelIndex)), this,
-			SLOT(on_doubleClicked(QModelIndex)));
 	// horizontalHeader()->setSortIndicator(0, Qt::AscendingOrder);
 	connect(horizontalHeader(), SIGNAL(sectionClicked(int)), this,
 			SLOT(headerClicked(int)));
@@ -64,6 +92,8 @@ void QTrashTableView::init() {
 
 	connect(this, SIGNAL(contextMenuRequested(QPoint)), this,
 			SLOT(openContextMenu(QPoint)));
+
+	connect(trashModel, SIGNAL(completed()), this, SLOT(updateInfo()));
 }
 
 
@@ -98,41 +128,33 @@ void QTrashTableView::updateInfo() {
 		return;
 
 	QString fmt;
-
+	qDebug() << trashModel->isFinished();
 	const auto &items =
 		trashModel->getItemsForDir(QUrl(QStringLiteral("trash:/")));
-	size_t totalSize;
-	int dirCount;
-	int fileCount;
+	size_t totalSize{};
+	int dirCount{};
+	int fileCount{};
 
 	bool res = parseItems(totalSize, dirCount, fileCount, items);
 
 	if (!res) {
 		fmt += "Trash folder is empty";
-		// return infoLabel->setText(fmt);
+		return infoLabel->setText(fmt);
 	}
 
-	//	auto sizeTotal = QLocale::system().formattedDataSize(
-	//		storage.bytesTotal(), 2, QLocale::DataSizeTraditionalFormat);
-	//	auto sizeRemaining = QLocale::system().formattedDataSize(
-	//		storage.bytesAvailable(), 2, QLocale::DataSizeTraditionalFormat);
+	auto sizeTotal = QLocale::system().formattedDataSize(
+		totalSize, 2, QLocale::DataSizeTraditionalFormat);
+	auto sizeRemaining = QLocale::system().formattedDataSize(
+		totalSize, 2, QLocale::DataSizeTraditionalFormat);
 
 
-	//	fmt += "\n";
-	//	fmt += sizeRemaining + " available of " + sizeTotal;
-	//	fmt += "\t" + QString::number(selectionModel()->selectedRows().size())
-	//		   + " selected of " + QString::number(model->rowCount(rootIndex())
-	//- 1)
-	//		   + " directory items";
+	fmt += sizeTotal + " in " + QString::number(fileCount) + " files, and "
+		   + QString::number(dirCount) + " directories in the Trash Bin.";
 
-	// infoLabel->setText(fmt);
+	infoLabel->setText(fmt);
 }
 
-void QTrashTableView::openContextMenu(QPoint) {
-
-	// menu->init();
-	// menu->popup(QCursor::pos());
-}
+void QTrashTableView::openContextMenu(QPoint) { menu->popup(QCursor::pos()); }
 
 bool QTrashTableView::isCurrent() const {
 	return true;
@@ -240,10 +262,19 @@ void QTrashTableView::keyPressEvent(QKeyEvent *event) {
 void QTrashTableView::focusInEvent(QFocusEvent *event) {
 	QAbstractItemView::focusInEvent(event);
 	emit focusEvent(true);
-	updateInfo();
 }
 
 void QTrashTableView::focusOutEvent(QFocusEvent *event) {
 	QAbstractItemView::focusOutEvent(event);
 	emit focusEvent(false);
+}
+
+QList<QUrl> QTrashTableView::getSelectedItems() {
+	auto rows = selectionModel()->selectedRows();
+	auto items = trashModel->currentItems();
+	QList<QUrl> outItems;
+	for (const auto idx : rows) {
+		outItems << items.at(idx.row()).url();
+	}
+	return outItems;
 }

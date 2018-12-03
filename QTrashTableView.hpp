@@ -36,6 +36,7 @@ public slots:
 	void updateInfo();
 	void openContextMenu(QPoint);
 
+
 protected:
 	void keyPressEvent(QKeyEvent *event) override;
 	void focusInEvent(QFocusEvent *event) override;
@@ -43,6 +44,7 @@ protected:
 	bool isCurrent() const;
 	bool parseItems(size_t &totalSize, int &dirCount, int &fileCount,
 					const KFileItemList &items);
+	QList<QUrl> getSelectedItems();
 
 private:
 	int index{};
@@ -51,6 +53,7 @@ private:
 	TableItemDelegate *delegate = nullptr;
 	FileTabSelector *parent = nullptr;
 	QTrashTableModel *trashModel;
+	QMenu *menu;
 
 	void mousePressEvent(QMouseEvent *event) override;
 	void mouseReleaseEvent(QMouseEvent *event) override;

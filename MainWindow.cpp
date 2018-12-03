@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow) {
 	ui->setupUi(this);
 	ui->tableView->init();
+	ui->tableView->setLabel(ui->label);
 	/*
 	trashModel = new QTrashModel(this);
 	ui->tableView->verticalHeader()->setVisible(false);
