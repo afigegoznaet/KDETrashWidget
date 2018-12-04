@@ -44,7 +44,7 @@ protected:
 	bool isCurrent() const;
 	bool parseItems(size_t &totalSize, int &dirCount, int &fileCount,
 					const KFileItemList &items);
-	QList<QUrl> getSelectedItems();
+	QList<QUrl> getSelectedItems(QList<int> &rows);
 
 private:
 	int index{};

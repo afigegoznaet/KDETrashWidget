@@ -21,24 +21,28 @@ QTrashTableView::QTrashTableView(QWidget *parent) : QTableView(parent) {
 	trashModel = new QTrashTableModel(this);
 	menu = new QMenu(this);
 	menu->addAction("Restore selected items", [this] {
-		QList<QUrl> selectedUrls = getSelectedItems();
+		QList<int> rows;
+		QList<QUrl> selectedUrls = getSelectedItems(rows);
 		KIO::RestoreJob *job = KIO::restoreFromTrash(selectedUrls);
 		KJobWidgets::setWindow(job, this);
 		job->uiDelegate()->setAutoErrorHandlingEnabled(true);
-		connect(job, &KIO::RestoreJob::finished, this, [this] {
-			qDebug() << "Finsihed restorins";
-			trashModel->reload();
-		});
+		connect(job, &KIO::RestoreJob::finished, this,
+				[this, rows = std::move(rows)] {
+					qDebug() << "Finsihed restorins";
+					trashModel->removeRows(rows);
+				});
 	});
 	menu->addAction("Purge selected items", [this] {
-		QList<QUrl> selectedUrls = getSelectedItems();
+		QList<int> rows;
+		QList<QUrl> selectedUrls = getSelectedItems(rows);
 		KIO::DeleteJob *job = KIO::del(selectedUrls);
 		KJobWidgets::setWindow(job, this);
 		job->uiDelegate()->setAutoErrorHandlingEnabled(true);
-		connect(job, &KIO::DeleteJob::finished, this, [this] {
-			qDebug() << "Finsihed purging";
-			trashModel->reload();
-		});
+		connect(job, &KIO::DeleteJob::finished, this,
+				[this, rows = std::move(rows)] {
+					qDebug() << "Finsihed purging";
+					trashModel->removeRows(rows);
+				});
 	});
 	menu->addAction("Empty Trash", [] { KIO::emptyTrash(); });
 }
@@ -269,11 +273,12 @@ void QTrashTableView::focusOutEvent(QFocusEvent *event) {
 	emit focusEvent(false);
 }
 
-QList<QUrl> QTrashTableView::getSelectedItems() {
-	auto rows = selectionModel()->selectedRows();
+QList<QUrl> QTrashTableView::getSelectedItems(QList<int> &rows) {
+	auto indexes = selectionModel()->selectedRows();
 	auto items = trashModel->currentItems();
 	QList<QUrl> outItems;
-	for (const auto idx : rows) {
+	for (const auto idx : indexes) {
+		rows.append(idx.row());
 		outItems << items.at(idx.row()).url();
 	}
 	return outItems;

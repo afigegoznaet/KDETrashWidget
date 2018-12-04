@@ -101,3 +101,10 @@ void QTrashTableModel::reload() {
 	items.clear();
 	m_trashDirLister->openUrl(m_trashDirLister->url(), KDirLister::Reload);
 }
+
+void QTrashTableModel::removeRows(const QList<int> &rowsToRemove) {
+	beginRemoveRows(QModelIndex(), rowsToRemove.first(), rowsToRemove.count());
+	for (const auto &row : rowsToRemove)
+		items.removeAt(row);
+	endRemoveRows();
+}

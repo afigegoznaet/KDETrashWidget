@@ -35,6 +35,7 @@ signals:
 public slots:
 	void addItems(const KFileItemList &items);
 	void reload();
+	void removeRows(const QList<int> &rowsToRemove);
 
 protected:
 private:
