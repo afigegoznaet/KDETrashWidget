@@ -103,8 +103,10 @@ void QTrashTableModel::reload() {
 }
 
 void QTrashTableModel::removeRows(const QList<int> &rowsToRemove) {
-	beginRemoveRows(QModelIndex(), rowsToRemove.first(), rowsToRemove.count());
-	for (const auto &row : rowsToRemove)
-		items.removeAt(row);
-	endRemoveRows();
+	for (auto row = rowsToRemove.crbegin(); row != rowsToRemove.crend();
+		 ++row) {
+		beginRemoveRows(QModelIndex(), *row, *row);
+		items.removeAt(*row);
+		endRemoveRows();
+	}
 }

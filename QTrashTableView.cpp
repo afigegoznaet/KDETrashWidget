@@ -281,5 +281,6 @@ QList<QUrl> QTrashTableView::getSelectedItems(QList<int> &rows) {
 		rows.append(idx.row());
 		outItems << items.at(idx.row()).url();
 	}
+	qSort(rows);
 	return outItems;
 }
