@@ -1,12 +1,18 @@
 #include "MainWindow.hpp"
 #include "ui_MainWindow.h"
 #include "QTrashTableModel.hpp"
+#include <QFileIconProvider>
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow) {
 	ui->setupUi(this);
 	ui->tableView->init();
 	ui->tableView->setLabel(ui->label);
+	QIcon trashIcon = icons.icon(QFileIconProvider::Trashcan);
+	trashIcon.setIsMask(true);
+	ui->pushButton->setIcon(trashIcon);
+	ui->pushButton->setDisabled(true);
+
 	/*
 	trashModel = new QTrashModel(this);
 	ui->tableView->verticalHeader()->setVisible(false);

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QMenu>
+#include <QFileIconProvider>
 
 class QTrashTableModel;
 
@@ -21,6 +22,7 @@ public:
 private:
 	Ui::MainWindow *ui;
 	QTrashTableModel *trashModel;
+	QFileIconProvider icons;
 };
 
 #endif // MAINWINDOW_HPP
