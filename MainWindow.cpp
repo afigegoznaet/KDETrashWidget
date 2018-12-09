@@ -8,10 +8,14 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->setupUi(this);
 	ui->tableView->init();
 	ui->tableView->setLabel(ui->label);
-	QIcon trashIcon = icons.icon(QFileIconProvider::Trashcan);
-	trashIcon.setIsMask(true);
-	ui->pushButton->setIcon(trashIcon);
-	ui->pushButton->setDisabled(true);
+	QIcon trashIconT = icons.icon(QFileIconProvider::Trashcan);
+	QIcon trashIconE = QIcon::fromTheme(QStringLiteral("user-trash"));
+	QIcon trashIconF = QIcon::fromTheme(QStringLiteral("user-trash-full"));
+
+	ui->providerTrash->setIcon(trashIconT);
+	ui->userTrash->setIcon(trashIconE);
+	ui->userTrashFull->setIcon(trashIconF);
+
 
 	/*
 	trashModel = new QTrashModel(this);

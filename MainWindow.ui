@@ -25,7 +25,27 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="userTrashFull">
+        <property name="text">
+         <string>RadioButton</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="userTrash">
+        <property name="text">
+         <string>RadioButton</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="providerTrash">
         <property name="text">
          <string>RadioButton</string>
         </property>
