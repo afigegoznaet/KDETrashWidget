@@ -28,6 +28,8 @@ signals:
 	void dirChanged(const QString dirName, int index);
 	void contextMenuRequested(QPoint);
 	void focusEvent(bool);
+	void trashNotEmpty();
+	void trashEmpty();
 
 public slots:
 

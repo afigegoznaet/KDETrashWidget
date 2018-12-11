@@ -23,6 +23,8 @@ private:
 	Ui::MainWindow *ui;
 	QTrashTableModel *trashModel;
 	QFileIconProvider icons;
+	QIcon trashIconE;
+	QIcon trashIconF;
 };
 
 #endif // MAINWINDOW_HPP

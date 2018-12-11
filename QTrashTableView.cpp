@@ -45,6 +45,9 @@ QTrashTableView::QTrashTableView(QWidget *parent) : QTableView(parent) {
 				});
 	});
 	menu->addAction("Empty Trash", [] { KIO::emptyTrash(); });
+
+	connect(trashModel, SIGNAL(trashNotEmpty()), this, SIGNAL(trashNotEmpty()));
+	connect(trashModel, SIGNAL(trashEmpty()), this, SIGNAL(trashEmpty()));
 }
 
 

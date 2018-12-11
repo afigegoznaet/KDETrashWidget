@@ -32,6 +32,8 @@ public:
 
 signals:
 	void completed();
+	void trashNotEmpty();
+	void trashEmpty();
 public slots:
 	void addItems(const KFileItemList &items);
 	void reload();

@@ -16,6 +16,7 @@ QTrashTableModel::QTrashTableModel(QObject *parent)
 
 void QTrashTableModel::addItems(const KFileItemList &items) {
 
+	bool wasEmpty = this->items.empty();
 	emit beginInsertRows(QModelIndex(), this->items.count() + 1,
 						 this->items.count() + items.count());
 	for (const auto item : items) {
@@ -35,6 +36,8 @@ void QTrashTableModel::addItems(const KFileItemList &items) {
 		 */
 	}
 	emit endInsertRows();
+	if (wasEmpty)
+		emit trashNotEmpty();
 }
 
 QVariant QTrashTableModel::data(const QModelIndex &index, int role) const {
@@ -109,4 +112,6 @@ void QTrashTableModel::removeRows(const QList<int> &rowsToRemove) {
 		items.removeAt(*row);
 		endRemoveRows();
 	}
+	if (items.empty())
+		emit trashEmpty();
 }
