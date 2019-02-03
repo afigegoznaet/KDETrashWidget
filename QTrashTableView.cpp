@@ -20,36 +20,43 @@ QTrashTableView::QTrashTableView(QWidget *parent) : QTableView(parent) {
 
 	trashModel = new QTrashTableModel(this);
 	menu = new QMenu(this);
-	menu->addAction("Restore selected items", [this] {
-		QList<int> rows;
-		QList<QUrl> selectedUrls = getSelectedItems(rows);
-		KIO::RestoreJob *job = KIO::restoreFromTrash(selectedUrls);
-		KJobWidgets::setWindow(job, this);
-		job->uiDelegate()->setAutoErrorHandlingEnabled(true);
-		connect(job, &KIO::RestoreJob::finished, this,
-				[this, rows = std::move(rows)] {
-					qDebug() << "Finsihed restorins";
-					trashModel->removeRows(rows);
-				});
-	});
-	menu->addAction("Purge selected items", [this] {
-		QList<int> rows;
-		QList<QUrl> selectedUrls = getSelectedItems(rows);
-		KIO::DeleteJob *job = KIO::del(selectedUrls);
-		KJobWidgets::setWindow(job, this);
-		job->uiDelegate()->setAutoErrorHandlingEnabled(true);
-		connect(job, &KIO::DeleteJob::finished, this,
-				[this, rows = std::move(rows)] {
-					qDebug() << "Finsihed purging";
-					trashModel->removeRows(rows);
-				});
-	});
+	menu->addAction("Restore selected items", this, SLOT(restoreItems()));
+	menu->addAction("Purge selected items", this, SLOT(purgeItems()));
+	// menu->addAction("Restore selected items", [this] { });
+	// menu->addAction("Purge selected items", [this] { });
 	menu->addAction("Empty Trash", [] { KIO::emptyTrash(); });
 
 	connect(trashModel, SIGNAL(trashNotEmpty()), this, SIGNAL(trashNotEmpty()));
 	connect(trashModel, SIGNAL(trashEmpty()), this, SIGNAL(trashEmpty()));
 }
 
+void QTrashTableView::restoreItems() {
+	QList<int> rows;
+	QList<QUrl> selectedUrls = getSelectedItems(rows);
+	KIO::RestoreJob *job = KIO::restoreFromTrash(selectedUrls);
+	KJobWidgets::setWindow(job, this);
+	job->uiDelegate()->setAutoErrorHandlingEnabled(true);
+	connect(job, &KIO::RestoreJob::finished, this,
+			[this, rows = std::move(rows)](KJob *job) {
+				qDebug() << "Finsihed restorins";
+				qDebug() << job->error();
+				if (job->error() == KJob::NoError)
+					trashModel->removeRows(rows);
+			});
+}
+void QTrashTableView::purgeItems() {
+	QList<int> rows;
+	QList<QUrl> selectedUrls = getSelectedItems(rows);
+	KIO::DeleteJob *job = KIO::del(selectedUrls);
+	KJobWidgets::setWindow(job, this);
+	job->uiDelegate()->setAutoErrorHandlingEnabled(true);
+	connect(job, &KIO::DeleteJob::finished, this,
+			[this, rows = std::move(rows)](KJob *job) {
+				qDebug() << "Finsihed purging";
+				if (job->error() == KJob::NoError)
+					trashModel->removeRows(rows);
+			});
+}
 
 void QTrashTableView::init() {
 
@@ -284,6 +291,6 @@ QList<QUrl> QTrashTableView::getSelectedItems(QList<int> &rows) {
 		rows.append(idx.row());
 		outItems << items.at(idx.row()).url();
 	}
-	qSort(rows);
+	// qSort(rows);
 	return outItems;
 }

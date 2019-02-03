@@ -37,6 +37,8 @@ public slots:
 	// void headerClicked(int section);
 	void updateInfo();
 	void openContextMenu(QPoint);
+	void restoreItems();
+	void purgeItems();
 
 
 protected:
